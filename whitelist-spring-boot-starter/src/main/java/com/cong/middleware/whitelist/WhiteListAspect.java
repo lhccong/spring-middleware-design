@@ -38,25 +38,40 @@ public class WhiteListAspect {
 
     @Around("aopPoint()")
     public Object doRouter(ProceedingJoinPoint jp) throws Throwable {
+        Object[] args = jp.getArgs();
         // 获取内容
         Method method = getMethod(jp);
         OpenWhiteList whiteList = method.getAnnotation(OpenWhiteList.class);
+        // 拦截的方法
+        MethodSignature methodSignature = (MethodSignature) jp.getSignature();
+
+        // 获取所有的入参名称
+        String[] parameterNames = methodSignature.getParameterNames();
+
 
         // 获取字段值
-        String keyValue = getFiledValue(whiteList.key(), jp.getArgs());
+        String key = whiteList.key(); //userId
+        String keyValue = getFiledValue(key, jp.getArgs());
 
         logger.info("白名单处理 method：{} value：{}", method.getName(), keyValue);
+
 
         if (null == keyValue || keyValue.isEmpty()) return jp.proceed();
 
         String[] split = whiteListConfig.split(",");
-
-        // 白名单过滤
-        for (String str : split) {
-            if (keyValue.equals(str)) {
-                return jp.proceed();
+        for (int i = 0; i < args.length; i++) {
+            String paramName = parameterNames[i];
+            // 参数名相同，进行白名单过滤
+            if (key.equals(paramName)) {
+                // 白名单过滤
+                for (String str : split) {
+                    if (keyValue.equals(str)) {
+                        return jp.proceed();
+                    }
+                }
             }
         }
+
 
         // 拦截
         return returnObject(whiteList, method);
