@@ -1,0 +1,5 @@
+server:
+  port: 8081
+wanwu:
+  whitelist:
+    users: aaa,bbb,cong
