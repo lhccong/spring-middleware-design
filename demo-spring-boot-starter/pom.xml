@@ -66,6 +66,12 @@
             <artifactId>whitelist-spring-boot-starter</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.cong.middle</groupId>
+            <artifactId>hystrix-spring-boot-starter</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,4 +1,4 @@
-package com.cong.middle.whitelist;
+package com.cong.middle;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
