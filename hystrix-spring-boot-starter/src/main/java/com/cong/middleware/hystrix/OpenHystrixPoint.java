@@ -10,12 +10,14 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
 @Aspect
 @Component
+@ComponentScan(basePackages = "com.cong.middleware.*")
 public class OpenHystrixPoint {
 
     @Pointcut("@annotation(com.cong.middleware.hystrix.annotation.OpenHystrix)")
@@ -24,8 +26,8 @@ public class OpenHystrixPoint {
 
     @Around("aopPoint() && @annotation(doGovern)")
     public Object doRouter(ProceedingJoinPoint jp, OpenHystrix doGovern) throws Throwable {
-        IValveService valveService = new HystrixValveImpl();
-        return valveService.access(jp, getMethod(jp), doGovern, jp.getArgs());
+        IValveService valveService = new HystrixValveImpl(doGovern, jp, getMethod(jp), jp.getArgs());
+        return valveService.access();
     }
 
     private Method getMethod(JoinPoint jp) throws NoSuchMethodException {

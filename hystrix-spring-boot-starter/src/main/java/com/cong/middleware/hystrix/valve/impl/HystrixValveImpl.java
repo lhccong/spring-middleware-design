@@ -5,6 +5,8 @@ import com.cong.middleware.hystrix.annotation.OpenHystrix;
 import com.cong.middleware.hystrix.valve.IValveService;
 import com.netflix.hystrix.*;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 
@@ -17,12 +19,12 @@ import java.lang.reflect.Method;
  */
 public class HystrixValveImpl extends HystrixCommand<Object> implements IValveService {
 
-    private ProceedingJoinPoint jp;
-    private Method method;
-    private OpenHystrix openHystrix;
+    private final Logger logger = LoggerFactory.getLogger(HystrixValveImpl.class);
+    private final ProceedingJoinPoint jp;
+    private final Method method;
+    private final OpenHystrix openHystrix;
 
-    public HystrixValveImpl() {
-
+    public HystrixValveImpl(OpenHystrix openHystrix, ProceedingJoinPoint jp, Method method, Object[] args) {
         /*********************************************************************************************
          * 置HystrixCommand的属性
          * GroupKey：            该命令属于哪一个组，可以帮助我们更好的组织命令。
@@ -31,27 +33,25 @@ public class HystrixValveImpl extends HystrixCommand<Object> implements IValveSe
          * CommandProperties：   该命令的一些设置，包括断路器的配置，隔离策略，降级设置，以及一些监控指标等。
          * ThreadPoolProperties：关于线程池的配置，包括线程池大小，排队队列的大小等
          *********************************************************************************************/
-
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("GovernGroup"))
                 .andCommandKey(HystrixCommandKey.Factory.asKey("GovernKey"))
                 .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey("GovernThreadPool"))
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                        .withExecutionTimeoutInMilliseconds(openHystrix.timeoutValue())
                         .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.THREAD))
                 .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(10))
         );
+        this.openHystrix = openHystrix;
+        this.jp = jp;
+        this.method = method;
+
+        logger.info("断路器 args：{}", args);
+
     }
 
     @Override
-    public Object access(ProceedingJoinPoint jp, Method method, OpenHystrix openHystrix, Object[] args) {
-        this.jp = jp;
-        this.method = method;
-        this.openHystrix = openHystrix;
-
-        // 设置熔断超时时间
-        Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("GovernGroup"))
-                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
-                        .withExecutionTimeoutInMilliseconds(openHystrix.timeoutValue()));
-
+    public Object access() {
+        logger.info("断路器启动！！！");
         return this.execute();
     }
 

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnClass(WhiteListProperties.class)
-@ComponentScan(basePackages = "com.cong.middleware.whitelist")
+@ComponentScan(basePackages = "com.cong.middleware.*")
 @EnableConfigurationProperties(WhiteListProperties.class)
 public class WhiteListAutoConfigure {
 
